@@ -16,6 +16,7 @@ package api
 
 import (
   "fmt"
+  "time"
   "bytes"
   "net/http"
   "encoding/json"
@@ -43,6 +44,7 @@ type Message struct {
 type Webhook struct {
   name        string
   url         string
+  debounceInt time.Duration
   client      http.Client
 }
 
@@ -52,6 +54,7 @@ type Webhook struct {
 
 type SlackWebhook interface {
   Push (msg * Message) error
+  SetDebounce (time.Duration) error
 }
 
 // -----------------------------------------------------------------------------
@@ -84,6 +87,7 @@ func NewWebhook (name, url string) (SlackWebhook, error) {
 
   wh.name = name
   wh.url  = url
+  wh.debounceInt = time.Millisecond * 1000 // ms
 
   return wh, nil
 }
@@ -110,5 +114,15 @@ func (this * Webhook) Push (msg * Message) (error) {
 
   // fmt.Printf ("Result: %v", result)
 
+  return nil
+}
+
+// -----------------------------------------------------------------------------
+
+func (this * Webhook) SetDebounce (ms time.Duration) error {
+  if ms < time.Millisecond * 1000 {
+    return fmt.Errorf ("Invalid interval: %d. Must be >= 1000", ms)
+  }
+  this.debounceInt = ms
   return nil
 }
