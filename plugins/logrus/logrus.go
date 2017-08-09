@@ -62,6 +62,10 @@ func NewLogHook (name, url string, ops * Options) (logrus.Hook, error) {
 
 // -----------------------------------------------------------------------------
 
+// NewOptions generates a pointer to Options which sets itself up with default
+// values. These can be overriiden by invoking its setter functions.
+// NOTE: Depending on the setup of your webhook, if it has been strictly created
+// with a channel / user, then it cannot overriden.
 func NewOptions () *Options {
   return &Options {
     channel     : "",
