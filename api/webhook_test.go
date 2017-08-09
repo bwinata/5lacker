@@ -45,3 +45,33 @@ func TestMultiMsgWebhook (t * testing.T) {
     }
   }
 }
+
+// -----------------------------------------------------------------------------
+
+func TestSingleAttachment (t * testing.T) {
+  var err error = nil
+
+  text := fmt.Sprintf ("Pass: TestSingleAttachment. Time: %s", time.Now().Format(time.RFC3339))
+
+  aTitle    := "Test title attachment"
+  aPretext  := "Test pretext attachment"
+  aText     := "Text text attachement"
+
+  a := &Attachment {
+    Title    : &aTitle,
+    Pretext  : &aPretext,
+    Text     : &aText,
+  }
+
+  m := &Message {
+    Text    : &text,
+    Attach  : []*Attachment{a},
+  }
+
+  err = wh.Push (m)
+  if err != nil {
+    t.Error (nil)
+  }
+}
+
+// -----------------------------------------------------------------------------

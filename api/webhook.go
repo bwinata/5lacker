@@ -7,8 +7,8 @@
  *      to any channel (public / private) and user you desire, provided you have
  *      the right permissions.
  *
- * Author: Barry Winata <barrywinata1@gmail.com>
- * Date: August 2017
+ * Author : Barry Winata <barrywinata1@gmail.com>
+ * Date   : August 2017
  * -----------------------------------------------------------------------------
  */
 
@@ -108,7 +108,7 @@ func (this * Webhook) Push (msg * Message) (error) {
 
   if err != nil { return err }
 
-  if result.StatusCode != 200 {
+  if result.StatusCode != http.StatusOK {
     return fmt.Errorf ("Cannot push request. Status=%d, Err=%v", result.StatusCode, result.Status)
   }
 
