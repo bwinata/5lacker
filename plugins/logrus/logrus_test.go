@@ -12,12 +12,7 @@ const (
 )
 
 func init () {
-  logrus.SetFormatter (&logrus.TextFormatter {
-    ForceColors       : false,
-    DisableTimestamp  : false,
-    DisableColors     : false,
-    FullTimestamp     : true,
-  })
+  logrus.SetFormatter (&logrus.TextFormatter {})
 
   logrus.SetOutput (os.Stdout)
   logrus.SetLevel (logrus.InfoLevel)

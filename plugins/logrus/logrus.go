@@ -41,6 +41,9 @@ type Loghook struct {
 
 // -----------------------------------------------------------------------------
 
+// NewLogHook returns a hook which is passed into logrus' API function -
+// AddHook. Based on the specified min log level, any calls by logrus automatically
+// invokes this hook and delivers a notification to Slack.
 func NewLogHook (name, url string, ops * Options) (logrus.Hook, error) {
   loghook := new (Loghook)
 
@@ -76,35 +79,45 @@ func NewOptions () *Options {
 
 // -----------------------------------------------------------------------------
 
-func (this * Options) SetChannel (channel string) (*Options) {
+// Set the Slack channel to send the logs. Default is an empty string and is
+// dictattd by the wehbook. For certain webhooks, this can be overriden.
+func (this * Options) SetChannel (channel string) *Options {
   this.channel = channel
   return this
 }
 
 // -----------------------------------------------------------------------------
 
-func (this * Options) SetIcon (icon string) (*Options) {
+// Set icon emoji. Default is empty and is dictated by the webhook. For certain
+// webhooks, this can be overriden.
+func (this * Options) SetIcon (icon string) *Options {
   this.icon = icon
   return this
 }
 
 // -----------------------------------------------------------------------------
 
-func (this * Options) SetMinLogLevel (level logrus.Level) (*Options) {
+// SetMinLogLevel sets the minimum level at which logs are sent to Slack.
+// By default they are et to the Warning level. This means that based on logrus'
+// levels, anything below this level i.e. Error, Fatal and Panic will trigger
+// a log to be delivered to Slack.
+func (this * Options) SetMinLogLevel (level logrus.Level) *Options {
   this.minLogLevel = level
   return this
 }
 
 // -----------------------------------------------------------------------------
 
-func (this * Options) SetAsync () (*Options) {
+// SetAsync sets a boolean to trigger the log events either synchronously or
+// asynchronoulsy. By default this is set to true.
+func (this * Options) SetAsync () *Options {
   this.async = true
   return this
 }
 
 // -----------------------------------------------------------------------------
 
-func (this * Loghook) Levels () ([]logrus.Level) {
+func (this * Loghook) Levels () []logrus.Level {
   levels := make ([]logrus.Level, 0, len (logrus.AllLevels))
   for _, l := range (logrus.AllLevels) {
     if this.ops.minLogLevel >= l {
@@ -119,15 +132,22 @@ func (this * Loghook) Levels () ([]logrus.Level) {
 func (this * Loghook) Fire (e * logrus.Entry) error {
   var err error = nil
 
+  rawText, strErr := e.String ()
+  if strErr != nil { return strErr }
+
   message := fmt.Sprintf ("*APP*: %s | *LEVEL*: %s | *TIME*: %s\n %s",
                            this.name,
                            e.Level.String (),
                            e.Time.Format (time.RFC3339),
-                           e.Message)
+                           rawText)
 
   m := &api.Message { Text : &message }
 
-  err = this.webhook.Push (m)
+  if this.ops.async {
+    go this.webhook.Push (m)
+  } else {
+    err = this.webhook.Push (m)
+  }
 
   return err
 }
